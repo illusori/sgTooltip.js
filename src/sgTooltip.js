@@ -30,6 +30,10 @@ function db( x )
     $('log').value = x + '\n' + $('log').value;
 }
 
+sgTooltip = {
+    Version = '1.0.0.1'
+    };
+
 TooltipHotspot = Class.create();
 
 TooltipHotspot.prototype = {
