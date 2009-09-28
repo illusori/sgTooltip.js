@@ -199,6 +199,8 @@ sgTooltipStack.prototype = {
 //border: 'thick yellow solid',
                     position: 'fixed'
                 } );
+            //  apply a class to floatDiv allowing styling.
+            this.floatDiv.addClassName( 'sgtooltip-float' );
             this.floatDiv.hide();
             document.body.appendChild( this.floatDiv );
 
@@ -208,6 +210,8 @@ sgTooltipStack.prototype = {
 //border: 'thick green solid',
                     position: 'static'
                 } );
+            //  apply a class to stackDiv allowing styling.
+            this.stackDiv.addClassName( 'sgtooltip-stack' );
             this.floatDiv.appendChild( this.stackDiv );
 
             sgTooltip.tooltipStacks[ position ] = this;
@@ -245,6 +249,8 @@ sgTooltipStack.prototype = {
                     margin:  '0px',
                     border: 'none'
                     } );
+                //  apply a class to containerDiv allowing styling.
+                containerDiv.addClassName( 'sgtooltip-container' );
 
                 tooltip.hide();
                 containerDiv.appendChild( tooltip );
@@ -369,9 +375,32 @@ sgTooltipStack.prototype = {
             if( this.hotspots.length < 1 )
                 return;
 
+            viewportDim = document.viewport.getDimensions();
+            viewportOffsets = document.viewport.getScrollOffsets();
+
+            vX = viewportDim.width + viewportOffsets.left;
+            vY = viewportDim.height + viewportOffsets.top;
+
             /*  TODO: figure out our x and y point  */
-            x = this.mouseX + 5;
-            y = this.mouseY + 5;
+            switch( this.position )
+            {
+            case 'fixed':
+                /*  TODO: figure out fixed position  */
+//                x = viewportOffsets.left + 5;
+//                y = viewportOffsets.top + 5;
+                x = vX - 5;
+                y = vY - 5;
+                break;
+            case 'element-relative':
+                x = this.mouseX + 5;
+                y = this.mouseY + 5;
+                break;
+            case 'mouse-relative':
+            default:
+                x = this.mouseX + 5;
+                y = this.mouseY + 5;
+                break;
+            }
 
             /*  Figure out our bounds  */
             dim = $(this.floatDiv).getDimensions();
@@ -380,12 +409,6 @@ sgTooltipStack.prototype = {
 //$('dimY').value = dim.height;
 
             /*  See if we need to flip and/or slide  */
-            viewportDim = document.viewport.getDimensions();
-            viewportOffsets = document.viewport.getScrollOffsets();
-
-            vX = viewportDim.width + viewportOffsets.left;
-            vY = viewportDim.height + viewportOffsets.top;
-
 //$('viewportX').value = vX;
 //$('viewportY').value = vY;
             if( x + dim.width >= vX - this.hotspots[ 0 ].x )
