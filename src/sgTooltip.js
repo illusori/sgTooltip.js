@@ -1,10 +1,10 @@
-/*  Tooltip class.
+/*  sgTooltip class.
  *  Produces a "tooltip" over elements from divs elsewhere in the document.
  *
  *  Requires (but doesn't check for) prototype 1.6. (http://prototypejs.org/)
  *  May work with earlier or later versions, up to you to test. :)
  *
- *  Copyright 2008 Sam Graham.  http://www.illusori.co.uk/
+ *  Copyright 2008-2009 Sam Graham.  http://www.illusori.co.uk/
  *  This work is licensed under a
  *  Creative Commons Attribution-Share Alike 2.0 UK: England & Wales License
  *  http://creativecommons.org/licenses/by-sa/2.0/uk/
@@ -16,27 +16,43 @@
 
 /*  Overview:
  *    There's two classes of objects involved:
- *      - TooltipHotspot:
+ *      - sgTooltipHotspot:
  *        This is a hotspot that displays an associated tooltip(s) when
  *        you mouseover it.
- *      - TooltipStack:
+ *      - sgTooltipStack:
  *        This is the stack of tooltips to display in a particular position,
  *        one of these is created for each position style of tooltip and it
  *        contains all the tooltips currently displayed in that position.
  */
 
-function db( x )
-{
-    $('log').value = x + '\n' + $('log').value;
-}
+//function db( x )
+//{
+//    $('log').value = x + '\n' + $('log').value;
+//}
 
 sgTooltip = {
-    Version = '1.0.0.1'
+    Version: '1.0.0.2',
+
+    tooltipStacks: {},
+
+    scanForTooltips: function()
+        {
+            var i, els;
+
+            new sgTooltipStack( 'fixed' );
+            new sgTooltipStack( 'elementRelative' );
+            new sgTooltipStack( 'mouseRelative' );
+
+            els = $$('.tooltip-hotspot');
+            for( i = 0; i < els.length; i++ )
+                new sgTooltipHotspot( els[ i ] );
+        }
+
     };
 
-TooltipHotspot = Class.create();
+sgTooltipHotspot = Class.create();
 
-TooltipHotspot.prototype = {
+sgTooltipHotspot.prototype = {
 
     defaults: {
         /*  Can be mouse-relative, element-relative, fixed  */
@@ -62,7 +78,7 @@ TooltipHotspot.prototype = {
              *  they exist, otherwise use our defaults.
              */
             value = this.hotspot.getAttribute( 'sgtooltip:' + setting );
-            if( value == undefined || value == null )
+            if( value === undefined || value === null )
                 return( this.defaults[ setting ] );
             if( type == 'number' )
                 return( parseFloat( value ) );
@@ -90,6 +106,7 @@ TooltipHotspot.prototype = {
             this.y        = this.getConfigValue( 'y', 'number' );
             this.flipX    = this.getConfigValue( 'flipX', 'boolean' );
             this.flipY    = this.getConfigValue( 'flipY', 'boolean' );
+this.stacking = this.getConfigValue( 'stacking', 'string' );
 
             /*  Set up our callback methods as "normal functions" suitable
              *  to be bound as an event listener.
@@ -130,19 +147,19 @@ TooltipHotspot.prototype = {
             if( this.showing )
                 return;
             this.showing = true;
-            tooltipStacks[ this.position ].addHotspot( this );
+            sgTooltip.tooltipStacks[ this.position ].addHotspot( this );
         },
     hideTooltips: function()
         {
             if( !this.showing )
                 return;
             this.showing = false;
-            tooltipStacks[ this.position ].removeHotspot( this );
+            sgTooltip.tooltipStacks[ this.position ].removeHotspot( this );
         },
 
     _mouseOver: function( e )
         {
-            tooltipStacks[ this.position ].updateMouse( e );
+            sgTooltip.tooltipStacks[ this.position ].updateMouse( e );
             this.showTooltips();
         },
     _mouseOut: function( e )
@@ -156,15 +173,15 @@ TooltipHotspot.prototype = {
             if( elTo == this.hotspot )
                 return;
 
-            tooltipStacks[ this.position ].updateMouse( e );
+            sgTooltip.tooltipStacks[ this.position ].updateMouse( e );
             this.hideTooltips();
         }
 
     };
 
-TooltipStack = Class.create();
+sgTooltipStack = Class.create();
 
-TooltipStack.prototype = {
+sgTooltipStack.prototype = {
 
     initialize: function( position )
         {
@@ -193,7 +210,7 @@ TooltipStack.prototype = {
                 } );
             this.floatDiv.appendChild( this.stackDiv );
 
-            tooltipStacks[ position ] = this;
+            sgTooltip.tooltipStacks[ position ] = this;
 
             /*  Set up our callback methods as "normal functions" suitable
              *  to be bound as an event listener.
@@ -204,7 +221,7 @@ TooltipStack.prototype = {
 
     addTooltipForHotspot: function( tooltip, hotspot )
         {
-            var ttd;
+            var ttd, containerDiv;
 
             tooltip = $(tooltip);
 
@@ -217,24 +234,26 @@ TooltipStack.prototype = {
             {
                 /*  Store initial state of tooltip  */
                 this.tooltipData.set( tooltip.id, {
-                    marginTop:  tooltip.getStyle( 'margin-top' ),
-                    marginLeft: tooltip.getStyle( 'margin-left' ),
-                    top: tooltip.getStyle( 'top' ),
-                    left: tooltip.getStyle( 'left' ),
-                    position: tooltip.getStyle( 'position' ),
-                    display: tooltip.getStyle( 'display' ),
                     visible: tooltip.visible(),
                     parent: tooltip.parentNode,
                     hotspots: [ hotspot ]
                     } );
 
+                containerDiv = document.createElement( 'div' );
+                containerDiv.setStyle( {
+                    padding: '0px',
+                    margin:  '0px',
+                    border: 'none'
+                    } );
+
                 tooltip.hide();
-                this.stackDiv.appendChild( tooltip );
+                containerDiv.appendChild( tooltip );
+
                 /*  Calculate style according to stacking  */
                 switch( hotspot.stacking )
                 {
                 case 'horizontal':
-                    tooltip.setStyle( {
+                    containerDiv.setStyle( {
                         display:    'inline-block',
                         position:   'static',
                         marginLeft: hotspot.x + 'px',
@@ -242,7 +261,7 @@ TooltipStack.prototype = {
                         } );
                     break;
                 case 'stacked':
-                    tooltip.setStyle( {
+                    containerDiv.setStyle( {
                         display:    'block',
                         position:   'absolute',
                         /*  TODO: sum up previous tip margins  */
@@ -251,7 +270,7 @@ TooltipStack.prototype = {
                         } );
                 case 'vertical':
                 default:
-                    tooltip.setStyle( {
+                    containerDiv.setStyle( {
                         display:    'block',
                         position:   'static',
                         marginLeft: hotspot.x + 'px',
@@ -259,6 +278,7 @@ TooltipStack.prototype = {
                         } );
                     break;
                 }
+                this.stackDiv.appendChild( containerDiv );
                 tooltip.show();
             }
         },
@@ -289,7 +309,7 @@ TooltipStack.prototype = {
 
     removeTooltipForHotspot: function( tooltip, hotspot )
         {
-            var ttd;
+            var ttd, containerDiv;
 
             tooltip = $(tooltip);
 
@@ -307,18 +327,12 @@ TooltipStack.prototype = {
             if( ttd.hotspots.length )
                 return;
 
+            containerDiv = tooltip.parentNode;
+
             /*  Restore initial state of tooltip  */
             tooltip.hide();
-            tooltip.setStyle( {
-                marginTop: ttd.marginTop,
-                marginLeft: ttd.marginLeft,
-                top: ttd.top,
-                left: ttd.left,
-                position: ttd.position,
-                display: ttd.display
-                } );
-
             ttd.parent.appendChild( tooltip );
+            this.stackDiv.removeChild( containerDiv );
             if( ttd.visible )
                 tooltip.show();
 
@@ -449,22 +463,8 @@ TooltipStack.prototype = {
 
     };
 
-var tooltipStacks = { };
-
-function scanForTooltips()
-{
-    var i, els;
-
-    new TooltipStack( 'fixed' );
-    new TooltipStack( 'elementRelative' );
-    new TooltipStack( 'mouseRelative' );
-
-    els = $$('.tooltip-hotspot');
-    for( i = 0; i < els.length; i++ )
-        new TooltipHotspot( els[ i ] );
-}
-
 if( document.loaded )
-    scanForTooltips();
+    sgTooltip.scanForTooltips();
 else
-    Event.observe( document, 'dom:loaded', scanForTooltips, false );
+    Event.observe( document, 'dom:loaded', sgTooltip.scanForTooltips, false );
+
