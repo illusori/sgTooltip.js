@@ -48,6 +48,8 @@ sgTooltip = {
                 new sgTooltipHotspot( els[ i ] );
         }
 
+//  TODO:  removeTooltips
+
     };
 
 sgTooltipHotspot = Class.create();
@@ -108,6 +110,8 @@ sgTooltipHotspot.prototype = {
             this.flipY    = this.getConfigValue( 'flipY', 'boolean' );
 this.stacking = this.getConfigValue( 'stacking', 'string' );
 
+//  TODO: supress title
+
             /*  Set up our callback methods as "normal functions" suitable
              *  to be bound as an event listener.
              */
@@ -167,10 +171,12 @@ this.stacking = this.getConfigValue( 'stacking', 'string' );
             var el     = Event.element( e );
             var elTo = e.relatedTarget || e.toElement;
 
-            while( elTo && elTo != this.hotspot && elTo.nodeName != 'BODY' )
+            while( elTo && elTo !== this.hotspot && elTo.nodeName != 'BODY' )
                 elTo = elTo.parentNode;
 
-            if( elTo == this.hotspot )
+//  TODO: allow mouse over tooltips themselves.
+
+            if( elTo === this.hotspot )
                 return;
 
             sgTooltip.tooltipStacks[ this.position ].updateMouse( e );
@@ -305,7 +311,7 @@ sgTooltipStack.prototype = {
             /*  if we were empty: show stackDiv, start watching  */
             if( this.hotspots.length == 1 )
             {
-                $(this.floatDiv).show();
+                this.floatDiv.show();
                 this.startWatching();
             }
 
@@ -327,7 +333,7 @@ sgTooltipStack.prototype = {
              *  this tooltip.
              */
             ttd.hotspots = $A(ttd.hotspots).findAll(
-                function( entry ) { return( entry != hotspot ); } );
+                function( entry ) { return( entry !== hotspot ); } );
 
             /*  If other hotspots need us, we're done  */
             if( ttd.hotspots.length )
@@ -351,14 +357,14 @@ sgTooltipStack.prototype = {
 
 //db( 'removeHotspot' );
             this.hotspots = $A(this.hotspots).findAll(
-                function( entry ) { return( entry != hotspot ); } );
+                function( entry ) { return( entry !== hotspot ); } );
             for( i = 0; i < hotspot.tooltips.length; i++ )
                 this.removeTooltipForHotspot( hotspot.tooltips[ i ], hotspot );
 
             /*  If we're now empty: hide stackDiv, stop watching  */
             if( this.hotspots.length < 1 )
             {
-                $(this.floatDiv).hide();
+                this.floatDiv.hide();
                 this.stopWatching();
             }
 
@@ -403,7 +409,7 @@ sgTooltipStack.prototype = {
             }
 
             /*  Figure out our bounds  */
-            dim = $(this.floatDiv).getDimensions();
+            dim = this.floatDiv.getDimensions();
 
 //$('dimX').value = dim.width;
 //$('dimY').value = dim.height;
@@ -433,7 +439,7 @@ sgTooltipStack.prototype = {
 //$('tooltipY').value = y;
 
             /*  Reposition ourselves  */
-            $(this.floatDiv).setStyle(
+            this.floatDiv.setStyle(
                 {
                     position: 'fixed',
                     left: x + 'px',
