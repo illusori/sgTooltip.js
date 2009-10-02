@@ -250,7 +250,7 @@ sgTooltipStack.prototype = {
                     } );
 
                 containerDiv = document.createElement( 'div' );
-                containerDiv.setStyle( {
+                $(containerDiv).setStyle( {
                     padding: '0px',
                     margin:  '0px',
                     border: 'none'
@@ -308,7 +308,7 @@ sgTooltipStack.prototype = {
             for( i = 0; i < hotspot.tooltips.length; i++ )
                 this.addTooltipForHotspot( hotspot.tooltips[ i ], hotspot );
 
-            /*  if we were empty: show stackDiv, start watching  */
+            /*  if we were empty: show floatDiv, start watching  */
             if( this.hotspots.length == 1 )
             {
                 this.floatDiv.show();
@@ -361,7 +361,7 @@ sgTooltipStack.prototype = {
             for( i = 0; i < hotspot.tooltips.length; i++ )
                 this.removeTooltipForHotspot( hotspot.tooltips[ i ], hotspot );
 
-            /*  If we're now empty: hide stackDiv, stop watching  */
+            /*  If we're now empty: hide floatDiv, stop watching  */
             if( this.hotspots.length < 1 )
             {
                 this.floatDiv.hide();
