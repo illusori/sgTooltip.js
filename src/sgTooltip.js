@@ -39,10 +39,14 @@ sgTooltip = {
         {
             var i, els;
 
-            new sgTooltipStack( 'fixed' );
-            new sgTooltipStack( 'elementRelative' );
-            new sgTooltipStack( 'mouseRelative' );
+            if( !this.tooltipStacks.fixed )
+                new sgTooltipStack( 'fixed' );
+            if( !this.tooltipStacks.elementRelative )
+                new sgTooltipStack( 'elementRelative' );
+            if( !this.tooltipStacks.mouseRelative )
+                new sgTooltipStack( 'mouseRelative' );
 
+//  TODO: prevent existing hotspots from being trashed by repeated calls.
             els = $$('.tooltip-hotspot');
             for( i = 0; i < els.length; i++ )
                 new sgTooltipHotspot( els[ i ] );
