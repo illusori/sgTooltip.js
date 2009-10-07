@@ -46,13 +46,21 @@ sgTooltip = {
             if( !this.tooltipStacks.mouseRelative )
                 new sgTooltipStack( 'mouseRelative' );
 
-//  TODO: prevent existing hotspots from being trashed by repeated calls.
             els = $$('.tooltip-hotspot');
             for( i = 0; i < els.length; i++ )
-                new sgTooltipHotspot( els[ i ] );
-        }
+                if( !els[ i ].tooltipHotspot )
+                    new sgTooltipHotspot( els[ i ] );
+        },
 
-//  TODO:  removeTooltips
+    removeAllTooltips: function()
+        {
+            var i, els;
+
+            els = $$('.tooltip-hotspot');
+            for( i = 0; i < els.length; i++ )
+                if( els[ i ].tooltipHotspot )
+                    els[ i ].tooltipHotspot.removeTooltip();
+        }
 
     };
 
