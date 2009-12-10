@@ -31,7 +31,7 @@
 //}
 
 sgTooltip = {
-    Version: '1.0.0.2',
+    Version: '1.0.1.1',
 
     tooltipStacks: {},
 
@@ -39,10 +39,14 @@ sgTooltip = {
         {
             var i, els;
 
+//db('scanning for tooltips.');
+
             if( !this.tooltipStacks.fixed )
                 new sgTooltipStack( 'fixed' );
+
             if( !this.tooltipStacks.elementRelative )
                 new sgTooltipStack( 'elementRelative' );
+
             if( !this.tooltipStacks.mouseRelative )
                 new sgTooltipStack( 'mouseRelative' );
 
@@ -50,6 +54,8 @@ sgTooltip = {
             for( i = 0; i < els.length; i++ )
                 if( !els[ i ].tooltipHotspot )
                     new sgTooltipHotspot( els[ i ] );
+
+//db('scanning complete.');
         },
 
     removeAllTooltips: function()
@@ -507,5 +513,5 @@ sgTooltipStack.prototype = {
 if( document.loaded )
     sgTooltip.scanForTooltips();
 else
-    Event.observe( document, 'dom:loaded', sgTooltip.scanForTooltips, false );
-
+    Event.observe( document, 'dom:loaded',
+        sgTooltip.scanForTooltips.bindAsEventListener( sgTooltip ), false );
