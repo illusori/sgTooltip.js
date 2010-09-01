@@ -31,7 +31,7 @@
 //}
 
 sgTooltip = {
-    Version: '1.0.1.1',
+    Version: '1.0.1.2',
 
     tooltipStacks: {},
 
@@ -186,7 +186,7 @@ this.stacking = this.getConfigValue( 'stacking', 'string' );
         },
     _mouseOut: function( e )
         {
-            var el     = Event.element( e );
+//            var el     = Event.element( e );
             var elTo = e.relatedTarget || e.toElement;
 
             while( elTo && elTo !== this.hotspot && elTo.nodeName != 'BODY' )
@@ -315,7 +315,7 @@ sgTooltipStack.prototype = {
 
     addHotspot: function( hotspot )
         {
-            var i, pos;
+            var i;
 
 //db( 'addHotspot' );
 
